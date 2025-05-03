@@ -1,10 +1,10 @@
 package com.ezbuy.product.controller;
 
-import com.ezbuy.product.model.Product;
+import com.ezbuy.product.dto.ProductRequestDTO;
+import com.ezbuy.product.dto.ProductResponseDTO;
 import com.ezbuy.product.service.ProductService;
 
-import jakarta.validation.Valid;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,35 +16,32 @@ import java.util.UUID;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+    @Autowired
+    private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAll() {
+    public ResponseEntity<List<ProductResponseDTO>> getAll() {
         return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{publicId}")
-    public ResponseEntity<Product> getById(@PathVariable UUID publicId) {
-        Product product = productService.findByPublicId(publicId);
-        return (product != null) ? ResponseEntity.ok(product) : ResponseEntity.notFound().build();
+    public ResponseEntity<ProductResponseDTO> getById(@PathVariable UUID publicId) {
+        ProductResponseDTO product = productService.findByPublicId(publicId);
+        return ResponseEntity.ok(product);
     }
 
     @PostMapping
-    public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
-        Product created = productService.create(product);
+    public ResponseEntity<ProductResponseDTO> create(@RequestBody ProductRequestDTO product) {
+        ProductResponseDTO created = productService.create(product);
         return ResponseEntity
-                .created(URI.create("/products/" + created.getPublicId()))
+                .created(URI.create("/products/" + created.publicId()))
                 .body(created);
     }
 
     @PutMapping("/{publicId}")
-    public ResponseEntity<Product> update(@PathVariable UUID publicId, @Valid @RequestBody Product product) {
-        Product updated = productService.update(publicId, product);
-        return (updated != null) ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    public ResponseEntity<ProductResponseDTO> update(@PathVariable UUID publicId, @RequestBody ProductRequestDTO product) {
+        ProductResponseDTO updated = productService.update(publicId, product);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{publicId}")
